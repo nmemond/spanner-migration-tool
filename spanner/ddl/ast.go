@@ -77,6 +77,8 @@ const (
 	PGTimestamptz string = "TIMESTAMPTZ"
 	// Jsonb represents the PG.JSONB type
 	PGJSONB string = "JSONB"
+	// PGSerial represents SERIAL, a type alias for an auto-incrementing column of type INT8
+	PGSerial string = "SERIAL"
 	// PGMaxLength represents sentinel for Type's Len field in PG.
 	PGMaxLength = 2621440
 )
@@ -153,8 +155,12 @@ func GetPGType(spType Type) string {
 	return spType.Name
 }
 
-func (ty Type) PGPrintColumnDefType() string {
+func (ty Type) PGPrintColumnDefType(autoGen AutoGenCol) string {
 	str := GetPGType(ty)
+	// If the column has auto-gen type AUTO_INCREMENT, use the SERIAL type alias
+	if (autoGen.GenerationType == constants.AUTO_INCREMENT) {
+		return PGSerial
+	}
 	// PG doesn't support array types, and we don't expect to receive a type
 	// with IsArray set to true. In the unlikely event, set to string type.
 	if ty.IsArray {
@@ -239,7 +245,7 @@ func (c Config) quote(s string) string {
 func (cd ColumnDef) PrintColumnDef(c Config) (string, string) {
 	var s string
 	if c.SpDialect == constants.DIALECT_POSTGRESQL {
-		s = fmt.Sprintf("%s %s", c.quote(cd.Name), cd.T.PGPrintColumnDefType())
+		s = fmt.Sprintf("%s %s", c.quote(cd.Name), cd.T.PGPrintColumnDefType(cd.AutoGen))
 		if cd.NotNull {
 			s += " NOT NULL "
 		}
@@ -496,6 +502,9 @@ func (agc AutoGenCol) PrintAutoGenCol() string {
 	}
 	if agc.GenerationType == constants.SEQUENCE {
 		return fmt.Sprintf(" DEFAULT (GET_NEXT_SEQUENCE_VALUE(SEQUENCE %s))", agc.Name)
+	}
+	if agc.GenerationType == constants.AUTO_INCREMENT {
+		return " AUTO_INCREMENT"
 	}
 	return ""
 }

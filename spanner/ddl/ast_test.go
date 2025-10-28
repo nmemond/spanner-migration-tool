@@ -51,20 +51,22 @@ func TestPrintScalarType(t *testing.T) {
 func TestPrintScalarTypePG(t *testing.T) {
 	tests := []struct {
 		in       Type
+		autoGen AutoGenCol
 		expected string
 	}{
-		{Type{Name: Bool}, "BOOL"},
-		{Type{Name: Int64}, "INT8"},
-		{Type{Name: Float32}, "FLOAT4"},
-		{Type{Name: Float64}, "FLOAT8"},
-		{Type{Name: String, Len: MaxLength}, "VARCHAR(2621440)"},
-		{Type{Name: String, Len: int64(42)}, "VARCHAR(42)"},
-		{Type{Name: Bytes, Len: MaxLength}, "BYTEA"},
-		{Type{Name: Bytes, Len: int64(42)}, "BYTEA"},
-		{Type{Name: Timestamp}, "TIMESTAMPTZ"},
+		{Type{Name: Bool}, AutoGenCol{}, "BOOL"},
+		{Type{Name: Int64}, AutoGenCol{}, "INT8"},
+		{Type{Name: Float32}, AutoGenCol{}, "FLOAT4"},
+		{Type{Name: Float64}, AutoGenCol{}, "FLOAT8"},
+		{Type{Name: String, Len: MaxLength}, AutoGenCol{}, "VARCHAR(2621440)"},
+		{Type{Name: String, Len: int64(42)}, AutoGenCol{}, "VARCHAR(42)"},
+		{Type{Name: Bytes, Len: MaxLength}, AutoGenCol{}, "BYTEA"},
+		{Type{Name: Bytes, Len: int64(42)}, AutoGenCol{}, "BYTEA"},
+		{Type{Name: Timestamp}, AutoGenCol{}, "TIMESTAMPTZ"},
+		{Type{Name: Int64}, AutoGenCol{GenerationType: constants.AUTO_INCREMENT}, "SERIAL"},
 	}
 	for _, tc := range tests {
-		assert.Equal(t, tc.expected, tc.in.PGPrintColumnDefType())
+		assert.Equal(t, tc.expected, tc.in.PGPrintColumnDefType(tc.autoGen))
 	}
 }
 
@@ -773,6 +775,8 @@ func TestPrintAutoGenCol(t *testing.T) {
 		expected string
 	}{
 		{AutoGenCol{Name: constants.UUID, GenerationType: "Pre-defined"}, " DEFAULT (GENERATE_UUID())"},
+		{AutoGenCol{Name: "testSeq", GenerationType: constants.SEQUENCE}, " DEFAULT (GET_NEXT_SEQUENCE_VALUE(SEQUENCE testSeq))"},
+		{AutoGenCol{Name: "testCol", GenerationType: constants.AUTO_INCREMENT}, " AUTO_INCREMENT"},
 		{AutoGenCol{GenerationType: "", Name: ""}, ""},
 	}
 	for _, tc := range tests {
@@ -786,6 +790,8 @@ func TestPGPrintAutoGenCol(t *testing.T) {
 		expected string
 	}{
 		{AutoGenCol{Name: constants.UUID, GenerationType: "Pre-defined"}, " DEFAULT (spanner.generate_uuid())"},
+		{AutoGenCol{Name: "testSeq", GenerationType: constants.SEQUENCE}, " DEFAULT NEXTVAL('testSeq')"},
+		{AutoGenCol{Name: "testCol", GenerationType: constants.AUTO_INCREMENT}, ""},
 		{AutoGenCol{GenerationType: "", Name: ""}, ""},
 	}
 	for _, tc := range tests {

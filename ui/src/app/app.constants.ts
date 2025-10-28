@@ -127,6 +127,10 @@ export const Gcs = {
   IsGcsConfigSet: 'isGcsConfigSet',
 }
 
+export const AutoGenGenerationTypes = {
+  AutoIncrement: 'Auto Increment',
+}
+
 export const Dataflow = {
   Network: 'network',
   Subnetwork: 'subnetwork',

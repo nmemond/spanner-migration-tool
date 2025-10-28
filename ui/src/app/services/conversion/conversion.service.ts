@@ -10,7 +10,7 @@ import IConv, {
 } from '../../model/conv'
 import IColumnTabData, { IIndexData, ISequenceData } from '../../model/edit-table'
 import IFkTabData from 'src/app/model/fk-tab-data'
-import { ColLength, Dialect, ObjectExplorerNodeType, SourceDbNames, StorageKeys, autoGenSupportedDbs } from 'src/app/app.constants'
+import { ColLength, Dialect, ObjectExplorerNodeType, SourceDbNames, StorageKeys, autoGenSupportedDbs, AutoGenGenerationTypes } from 'src/app/app.constants'
 import { BehaviorSubject } from 'rxjs'
 import { FetchService } from '../fetch/fetch.service'
 import { extractSourceDbName } from 'src/app/utils/utils'
@@ -346,6 +346,10 @@ export class ConversionService {
         spannerTypeName = 'ARRAY<'+spannerTypeName+'>'
       }
       let pgSQLDatatype = spannerColDef ? standardTypeToPGSQLTypeMap.get(spannerColDef.T.Name) : ''
+      // For the postgres dialect, auto incrementing columns use the SERIAL datatype
+      if (spannerColDef?.AutoGen?.GenerationType === AutoGenGenerationTypes.AutoIncrement){
+        pgSQLDatatype = 'SERIAL'
+      }
       return {
         spOrder: spannerColDef ? i + 1 : '',
         srcOrder: i + 1,
