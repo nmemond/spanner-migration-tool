@@ -156,6 +156,7 @@ const (
 	CassandraMAP
 	PossibleOverflow
 	AutoIncrementSkipRange
+	AutoIncrementPotentialHotspot
 )
 
 const (

@@ -403,7 +403,7 @@ func (ss *SchemaToSpannerImpl) SchemaToSpannerDDLHelper(conv *internal.Conv, tod
 				} else if autoGenCol.GenerationType == constants.SEQUENCE {
 					issues = append(issues, internal.SequenceCreated)
 				} else if autoGenCol.GenerationType == constants.AUTO_INCREMENT {
-					issues = append(issues, internal.AutoIncrementSkipRange)
+					issues = append(issues, internal.AutoIncrementSkipRange, internal.AutoIncrementPotentialHotspot)
 				}
 			}
 		}
