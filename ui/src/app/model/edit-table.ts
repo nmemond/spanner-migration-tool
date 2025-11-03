@@ -25,6 +25,13 @@ export default interface IColumnTabData {
 export interface AutoGen {
   Name: string;
   GenerationType: string;
+  IdentityOptions: IdentityOptions;
+}
+
+export interface IdentityOptions {
+  SkipRangeMin: string;
+  SkipRangeMax: string;
+  StartCounterWith: string;
 }
 
 export interface IIndexData {

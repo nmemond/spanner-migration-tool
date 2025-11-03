@@ -367,11 +367,21 @@ export class ConversionService {
         srcColMaxLength: data.SrcSchema[tableId].ColDefs[colId].Type.Mods != null ? data.SrcSchema[tableId].ColDefs[colId].Type.Mods[0] : '',
         spAutoGen: spannerColDef?.AutoGen != null ? spannerColDef?.AutoGen : {
           Name: '',
-          GenerationType: ''
+          GenerationType: '',
+          IdentityOptions: {
+            SkipRangeMin: '',
+            SkipRangeMax: '',
+            StartCounterWith: '',
+          }
         },
         srcAutoGen: data.SrcSchema[tableId].ColDefs[colId].AutoGen ? data.SrcSchema[tableId].ColDefs[colId].AutoGen : {
           Name: '',
-          GenerationType: ''
+          GenerationType: '',
+          IdentityOptions: {
+            SkipRangeMin: '',
+            SkipRangeMax: '',
+            StartCounterWith: '',
+          }
         },
         spDefaultValue: spannerColDef?.DefaultValue != null ? spannerColDef?.DefaultValue : {
           IsPresent: false,
@@ -409,7 +419,12 @@ export class ConversionService {
             spAutoGen: spColumn.AutoGen,
             srcAutoGen: {
               Name: '',
-              GenerationType: ''
+              GenerationType: '',
+              IdentityOptions: {
+                SkipRangeMin: '',
+                SkipRangeMax: '',
+                StartCounterWith: ''
+              }
             },
             spDefaultValue: spannerColDef?.DefaultValue != null ? spannerColDef?.DefaultValue : {
               IsPresent: false,

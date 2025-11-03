@@ -1,5 +1,5 @@
 import ICreateSequence from './auto-gen'
-import { AutoGen } from './edit-table'
+import { AutoGen, IdentityOptions } from './edit-table'
 import IRule from './rule'
 
 export default interface IConv {
@@ -197,6 +197,13 @@ export interface IPrimaryKey {
 export interface IAutoGen {
   Name: string
   GenerationType: string
+  IdentityOptions: IIdentityOptions;
+}
+
+export interface IIdentityOptions {
+  SkipRangeMin: string;
+  SkipRangeMax: string;
+  StartCounterWith: string;
 }
 
 export interface ISessionSummary {

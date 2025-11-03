@@ -147,6 +147,17 @@ export class ObjectDetailComponent implements OnInit, OnDestroy {
     'spIsNotNull',
     'dropButton',
   ]
+  displayedIdentityColumns = [
+    'srcColName',
+    'srcDataType',
+    'srcAutoGen',
+    'spColName',
+    'spDataType',
+    'spAutoGen',
+    'spSkipRangeMin',
+    'spSkipRangeMax',
+    'spStartCounterWith',
+  ]
 
   indexDisplayedColumns = [
     'srcIndexColName',
@@ -170,6 +181,7 @@ export class ObjectDetailComponent implements OnInit, OnDestroy {
   fkDataSource: any = []
   pkDataSource: any = []
   ccDataSource: any = []
+  identityDataSource: any = []
   pkData: IColumnTabData[] = []
   isPkEditMode: boolean = false
   isEditMode: boolean = false
@@ -178,11 +190,13 @@ export class ObjectDetailComponent implements OnInit, OnDestroy {
   isSequenceEditMode: boolean = false
   isObjectSelected: boolean = false
   isCcEditMode: boolean = false
+  isIdentityEditMode: boolean = false
   srcRowArray: FormArray = this.fb.array([])
   spRowArray: FormArray = this.fb.array([])
   pkArray: FormArray = this.fb.array([])
   fkArray: FormArray = this.fb.array([])
   ccArray: FormArray = this.fb.array([])
+  identityRowArray: FormArray = this.fb.array([])
   isSpTableSuggesstionDisplay: boolean[] = []
   spTableSuggestion: string[] = []
   currentTabIndex: number = 0
@@ -225,13 +239,14 @@ export class ObjectDetailComponent implements OnInit, OnDestroy {
     this.interleaveType = this.getInterleaveTypeFromConv()
     this.onDeleteAction = this.getInterleaveOnDeleteActionFromConv() ?? ''
 
-  
+
     this.isEditMode = false
     this.isFkEditMode = false
     this.isIndexEditMode = false
     this.isSequenceEditMode = false
     this.isPkEditMode = false
     this.isCcEditMode = false
+    this.isIdentityEditMode = false
     this.srcRowArray = this.fb.array([])
     this.spRowArray = this.fb.array([])
     this.droppedColumns = []
@@ -271,6 +286,7 @@ export class ObjectDetailComponent implements OnInit, OnDestroy {
       this.setPkRows()
       this.setFkRows()
       this.setCCRows()
+      this.setIdentityRows()
       this.updateSpTableSuggestion()
       this.setShardIdColumn()
       this.processedAutoGenMap = processAutoGens(this.autoGenMap)
@@ -533,7 +549,12 @@ export class ObjectDetailComponent implements OnInit, OnDestroy {
         MaxColLength: '',
         AutoGen: {
           Name : '',
-          GenerationType : ''
+          GenerationType : '',
+          IdentityOptions: {
+            SkipRangeMin: '',
+            SkipRangeMax: '',
+            StartCounterWith: '',
+          }
         },
         DefaultValue: {
           IsPresent: false,
@@ -748,7 +769,12 @@ export class ObjectDetailComponent implements OnInit, OnDestroy {
         col.spCassandraOption = ''
         col.spAutoGen = {
           Name : '',
-          GenerationType : ''
+          GenerationType : '',
+          IdentityOptions: {
+            SkipRangeMin: '',
+            SkipRangeMax: '',
+            StartCounterWith: '',
+          }
         },
         col.spDefaultValue = {
           Value: {
@@ -1006,7 +1032,7 @@ export class ObjectDetailComponent implements OnInit, OnDestroy {
   }
 
   toggleCcEdit() {
-    this.currentTabIndex = 4;
+    this.currentTabIndex = 5;
 
     if (this.isCcEditMode) {
       this.setCCRows();
@@ -1512,7 +1538,7 @@ export class ObjectDetailComponent implements OnInit, OnDestroy {
         console.error('Interleave type cannot be empty');
         return;
       }
-      
+
       let tableId = this.currentObject!.id;
 
       this.data
@@ -1958,5 +1984,47 @@ export class ObjectDetailComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe()
+  }
+
+  setIdentityRows() {
+    this.identityRowArray = this.fb.array([])
+    this.localTableData.forEach((row) => {
+      if (row.spAutoGen?.GenerationType === 'Identity') {
+        let fb = new FormGroup({
+          srcOrder: new FormControl(row.srcOrder),
+          srcColName: new FormControl(row.srcColName),
+          srcDataType: new FormControl(row.srcDataType),
+          srcAutoGen: new FormControl(row.srcAutoGen),
+          spOrder: new FormControl(row.srcOrder),
+          spColName: new FormControl(row.spColName),
+          spDataType: new FormControl(row.spDataType),
+          spId: new FormControl(row.spId),
+          srcId: new FormControl(row.srcId),
+          spAutoGen: new FormControl(row.spAutoGen),
+          spSkipRangeMin: new FormControl(row.spAutoGen.IdentityOptions.SkipRangeMin, Validators.pattern('^[0-9]+$')),
+          spSkipRangeMax: new FormControl(row.spAutoGen.IdentityOptions.SkipRangeMax, Validators.pattern('^[0-9]+$')),
+          spStartCounterWith: new FormControl(row.spAutoGen.IdentityOptions.StartCounterWith, Validators.pattern('^[0-9]+$')),
+        }, { validators: linkedFieldsValidatorSequence('spSkipRangeMin', 'spSkipRangeMax') })
+        this.identityRowArray.push(
+          fb
+        )
+      }
+    })
+    this.identityDataSource = this.identityRowArray.controls
+  }
+
+  saveIdentityOptions() {
+    this.isIdentityEditMode = false
+  }
+
+  toggleIdentityEdit() {
+    this.currentTabIndex = 3
+    if (this.isIdentityEditMode) {
+      this.setIdentityRows()
+      this.isIdentityEditMode = false
+    } else {
+      this.currentTabIndex = 3
+      this.isIdentityEditMode = true
+    }
   }
 }
